@@ -55,3 +55,7 @@ logs/
 *.tmp
 *.bak
 *.old
+
+#Временный файл(создается каждый раз при вызове в eda-cli)
+reports_example/
+reports/
