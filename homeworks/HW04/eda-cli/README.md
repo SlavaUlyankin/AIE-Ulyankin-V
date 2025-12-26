@@ -1,44 +1,54 @@
-# S04 – eda_cli: мини-EDA для CSV
+# S04 – eda_cli: HTTP-сервис качества датасетов (FastAPI)
 
-Небольшое CLI-приложение и REST API для базового анализа CSV-файлов.
-Используется в рамках Семинара 03 курса «Инженерия ИИ».
+Расширенная версия проекта `eda-cli` из Семинара 03.
+
+К существующему CLI-приложению для EDA добавлен **HTTP-сервис на FastAPI** с эндпоинтами `/health`, `/quality` и `/quality-from-csv`.  
+Используется в рамках Семинара 04 курса «Инженерия ИИ».
+
+---
+
+## Связь с S03
+
+Проект в S04 основан на том же пакете `eda_cli`, что и в S03:
+
+- сохраняется структура `src/eda_cli/` и CLI-команда `eda-cli`;
+- добавлен модуль `api.py` с FastAPI-приложением;
+- в зависимости добавлены `fastapi` и `uvicorn[standard]`.
+
+Цель S04 – показать, как поверх уже написанного EDA-ядра поднять простой HTTP-сервис.
+
+---
 
 ## Требования
 
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) установлен в систему
+- Браузер (для Swagger UI `/docs`) или любой HTTP-клиент:
+  - `curl` / HTTP-клиент в IDE / Postman / Hoppscotch и т.п.
+
+---
 
 ## Инициализация проекта
 
-В корне проекта (`homeworks/HW04/eda-cli`):
+В корне проекта (каталог S04/eda-cli):
 
 ```bash
 uv sync
 ```
 
-Эта команда:
+Команда:
 
 - создаст виртуальное окружение `.venv`;
-- установит зависимости из `pyproject.toml` (pandas, matplotlib, fastapi, uvicorn, typer, pytest и др.);
+- установит зависимости из `pyproject.toml` (включая FastAPI и Uvicorn);
 - установит сам проект `eda-cli` в окружение.
 
-## Зависимости
+---
 
-Все необходимые зависимости указаны в `pyproject.toml`:
+## Запуск CLI (как в S03)
 
-- **fastapi** – веб-фреймворк для REST API
-- **uvicorn[standard]** – ASGI-сервер для запуска FastAPI
-- **pandas** – обработка CSV и анализ данных
-- **matplotlib** – визуализация (гистограммы, тепловые карты)
-- **typer** – CLI-фреймворк
-- **python-multipart** – поддержка загрузки файлов в FastAPI
-- **pytest** – тестирование
+CLI остаётся доступным и в S04.
 
-После выполнения `uv sync` все пакеты будут установлены автоматически.
-
-## Запуск CLI
-
-### Краткий обзор датасета
+### Краткий обзор
 
 ```bash
 uv run eda-cli overview data/example.csv
@@ -46,14 +56,8 @@ uv run eda-cli overview data/example.csv
 
 Параметры:
 
-- `--sep` – разделитель (по умолчанию `,`)
-- `--encoding` – кодировка (по умолчанию `utf-8`)
-
-Пример с кастомным разделителем:
-
-```bash
-uv run eda-cli overview data/example.csv --sep ";" --encoding "utf-8"
-```
+- `--sep` - разделитель (по умолчанию `,`);
+- `--encoding` - кодировка (по умолчанию `utf-8`).
 
 ### Полный EDA-отчёт
 
@@ -63,102 +67,265 @@ uv run eda-cli report data/example.csv --out-dir reports
 
 В результате в каталоге `reports/` появятся:
 
-- `report.md` – основной отчёт в Markdown
-- `summary.csv` – таблица статистики по колонкам
-- `missing.csv` – пропуски по колонкам
-- `correlation.csv` – корреляционная матрица (если есть числовые признаки)
-- `top_categories/*.csv` – top-k категорий по строковым признакам
-- `hist_*.png` – гистограммы числовых колонок
-- `missing_matrix.png` – визуализация пропусков
-- `correlation_heatmap.png` – тепловая карта корреляций
+- `report.md` - основной отчёт в Markdown;
+- `summary.csv` - таблица по колонкам;
+- `missing.csv` - пропуски по колонкам;
+- `correlation.csv` - корреляционная матрица (если есть числовые признаки);
+- `top_categories/*.csv` - top-k категорий по строковым признакам;
+- `hist_*.png` - гистограммы числовых колонок;
+- `missing_matrix.png` - визуализация пропусков;
+- `correlation_heatmap.png` - тепловая карта корреляций.
 
-Параметры:
+---
 
-- `--sep` – разделитель
-- `--encoding` – кодировка
-- `--out-dir` – каталог для сохранения отчётов (по умолчанию `reports`)
+## Запуск HTTP-сервиса
 
-## Запуск REST API
+HTTP-сервис реализован в модуле `eda_cli.api` на FastAPI.
 
-Для запуска веб-сервиса используется **uvicorn**:
+### Запуск Uvicorn
 
 ```bash
-uvicorn eda_cli.api:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn eda_cli.api:app --reload --port 8000
 ```
 
-Параметры:
+Пояснения:
 
-- `eda_cli.api:app` – путь к FastAPI-приложению (модуль `eda_cli.api`, объект `app`)
-- `--host 0.0.0.0` – слушать на всех сетевых интерфейсах
-- `--port 8000` – порт (по умолчанию 8000)
-- `--reload` – автоперезагрузка при изменении кода (для разработки)
+- `eda_cli.api:app` - путь до объекта FastAPI `app` в модуле `eda_cli.api`;
+- `--reload` - автоматический перезапуск сервера при изменении кода (удобно для разработки);
+- `--port 8000` - порт сервиса (можно поменять при необходимости).
 
-После запуска API будет доступно по адресу:
+После запуска сервис будет доступен по адресу:
 
-- **Основной адрес**: `http://localhost:8000`
-- **Интерактивная документация (Swagger UI)**: `http://localhost:8000/docs`
-- **Альтернативная документация (ReDoc)**: `http://localhost:8000/redoc`
+```text
+http://127.0.0.1:8000
+```
 
-### Доступные эндпоинты
+---
 
-1. **GET /** – корневой эндпоинт, возвращает информацию о сервисе
-2. **POST /overview** – краткий обзор загруженного CSV-файла
-3. **POST /report** – генерация полного EDA-отчёта с визуализациями
+## Эндпоинты сервиса
 
-Пример использования через `curl`:
+### 1. `GET /health`
+
+Простейший health-check.
+
+**Запрос:**
+
+```http
+GET /health
+```
+
+**Ожидаемый ответ `200 OK` (JSON):**
+
+```json
+{
+  "status": "ok",
+  "service": "dataset-quality",
+  "version": "0.2.0"
+}
+```
+
+Пример проверки через `curl`:
 
 ```bash
-# Краткий обзор
-curl -X POST "http://localhost:8000/overview" \
-  -F "file=@data/example.csv" \
-  -F "sep=," \
-  -F "encoding=utf-8"
-
-# Полный отчёт
-curl -X POST "http://localhost:8000/report" \
-  -F "file=@data/example.csv" \
-  -F "sep=," \
-  -F "encoding=utf-8"
+curl http://127.0.0.1:8000/health
 ```
+
+---
+
+### 2. Swagger UI: `GET /docs`
+
+Интерфейс документации и тестирования API:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Через `/docs` можно:
+
+- вызывать `GET /health`;
+- вызывать `POST /quality` (форма для JSON);
+- вызывать `POST /quality-from-csv` (форма для загрузки файла).
+
+---
+
+### 3. `POST /quality` – заглушка по агрегированным признакам
+
+Эндпоинт принимает **агрегированные признаки датасета** (размеры, доля пропусков и т.п.) и возвращает эвристическую оценку качества.
+
+**Пример запроса:**
+
+```http
+POST /quality
+Content-Type: application/json
+```
+
+Тело:
+
+```json
+{
+  "n_rows": 10000,
+  "n_cols": 12,
+  "max_missing_share": 0.15,
+  "numeric_cols": 8,
+  "categorical_cols": 4
+}
+```
+
+**Пример ответа `200 OK`:**
+
+```json
+{
+  "ok_for_model": true,
+  "quality_score": 0.8,
+  "message": "Данных достаточно, модель можно обучать (по текущим эвристикам).",
+  "latency_ms": 3.2,
+  "flags": {
+    "too_few_rows": false,
+    "too_many_columns": false,
+    "too_many_missing": false,
+    "no_numeric_columns": false,
+    "no_categorical_columns": false
+  },
+  "dataset_shape": {
+    "n_rows": 10000,
+    "n_cols": 12
+  }
+}
+```
+
+**Пример вызова через `curl`:**
+
+```bash
+curl -X POST "http://127.0.0.1:8000/quality" \
+  -H "Content-Type: application/json" \
+  -d '{"n_rows": 10000, "n_cols": 12, "max_missing_share": 0.15, "numeric_cols": 8, "categorical_cols": 4}'
+```
+
+---
+
+### 4. `POST /quality-from-csv` – оценка качества по CSV-файлу
+
+Эндпоинт принимает CSV-файл, внутри:
+
+- читает его в `pandas.DataFrame`;
+- вызывает функции из `eda_cli.core`:
+
+  - `summarize_dataset`,
+  - `missing_table`,
+  - `compute_quality_flags`;
+- возвращает оценку качества датасета в том же формате, что `/quality`.
+
+**Запрос:**
+
+```http
+POST /quality-from-csv
+Content-Type: multipart/form-data
+file: <CSV-файл>
+```
+
+Через Swagger:
+
+- в `/docs` открыть `POST /quality-from-csv`,
+- нажать `Try it out`,
+- выбрать файл (например, `data/example.csv`),
+- нажать `Execute`.
+
+**Пример вызова через `curl` (Linux/macOS/WSL):**
+
+```bash
+curl -X POST "http://127.0.0.1:8000/quality-from-csv" \
+  -F "file=@data/example.csv"
+```
+
+Ответ будет содержать:
+
+- `ok_for_model` - результат по эвристикам;
+- `quality_score` - интегральный скор качества;
+- `flags` - булевы флаги из `compute_quality_flags`;
+- `dataset_shape` - реальные размеры датасета (`n_rows`, `n_cols`);
+- `latency_ms` - время обработки запроса.
+
+---
+
+### 5. `POST /quality-flags-from-csv` – полный набор флагов качества
+Эндпоинт принимает CSV-файл и возвращает все вычисленные флаги качества данных, включая как булевы индикаторы, так и детальную информацию о проблемных колонках.
+
+Внутри:
+
+- читает CSV-файл в `pandas.DataFrame`;
+- вызывает функции из `eda_cli.core`:
+
+  - `summarize_dataset`,
+  - `missing_table`,
+  - `compute_quality_flags`;
+- возвращает полный словарь флагов, включая списки колонок и числовые метрики.
+
+**Запрос:**
+
+```http
+POST /quality-flags-from-csv
+Content-Type: multipart/form-data
+file: <CSV-файл>
+```
+
+Через Swagger:
+
+- в `/docs` открыть `POST /quality-flags-from-csv`,
+- нажать `Try it out`,
+- выбрать файл (например, `data/example.csv`),
+- нажать `Execute`.
+
+**Пример вызова через `curl` (Linux/macOS/WSL):**
+
+```bash
+curl -X POST "http://127.0.0.1:8000/quality-flags-from-csv" \
+  -F "file=@data/example.csv"
+```
+
+Ответ будет содержать:
+
+- `flags` -полный набор флагов качества, включая:
+
+  - булевы флаги (too_few_rows, has_constant_columns, has_many_zero_values и др.),
+  - списки имён колонок (constant_columns, zero_heavy_columns),
+  - числовые метрики (quality_score, max_missing_share);
+- `latency_ms` - время обработки запроса.
+
+
+---
+
+## Структура проекта (упрощённо)
+
+```text
+S04/
+  eda-cli/
+    pyproject.toml
+    README.md                # этот файл
+    src/
+      eda_cli/
+        __init__.py
+        core.py              # EDA-логика, эвристики качества
+        viz.py               # визуализации
+        cli.py               # CLI (overview/report)
+        api.py               # HTTP-сервис (FastAPI)
+    tests/
+      test_core.py           # тесты ядра
+    data/
+      example.csv            # учебный CSV для экспериментов
+```
+
+---
 
 ## Тесты
 
-Для запуска тестов используйте pytest:
+Запуск тестов (как и в S03):
 
 ```bash
 uv run pytest -q
 ```
 
-Или с более подробным выводом:
+Рекомендуется перед любыми изменениями в логике качества данных и API:
 
-```bash
-uv run pytest -v
-```
-
-## Структура проекта
-
-```
-eda-cli/
-├── src/
-│   └── eda_cli/
-│       ├── __init__.py
-│       ├── api.py          # FastAPI REST API
-│       ├── cli.py          # CLI-команды (typer)
-│       ├── core.py         # Логика EDA-анализа
-│       └── viz.py          # Визуализация (matplotlib)
-├── data/
-│   └── example.csv         # Примеры данных
-├── tests/
-│   └── ...                 # Тесты
-├── pyproject.toml          # Конфигурация и зависимости
-├── uv.lock                 # Зафиксированные версии зависимостей
-└── README.md               # Этот файл
-```
-
-## Примечания
-
-- Для работы с CSV-файлами используется pandas
-- Визуализации генерируются с помощью matplotlib
-- API реализовано на FastAPI с автоматической генерацией документации
-- CLI создан с помощью typer для удобного взаимодействия в терминале
-- Проект использует uv для управления зависимостями и виртуальным окружением
+1. Запустить тесты `pytest`;
+2. Проверить работу CLI (`uv run eda-cli ...`);
+3. Проверить работу HTTP-сервиса (`uv run uvicorn ...`, затем `/health` и `/quality`/`/quality-from-csv`/`/quality-flags-from-csv` через `/docs` или HTTP-клиент).
