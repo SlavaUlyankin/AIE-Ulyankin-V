@@ -1,0 +1,17 @@
+{
+  "model_name": "GradientBoostingClassifier",
+  "parameters": {
+    "n_estimators": 100,
+    "max_depth": 5,
+    "learning_rate": 0.1,
+    "random_state": 42
+  },
+  "test_metrics": {
+    "accuracy": 0.8578,
+    "f1": 0.6921,
+    "roc_auc": 0.8712
+  },
+  "cv_score": 0.8663,
+  "training_date": "2025-12-27",
+  "dataset": "S06-hw-dataset-02.csv"
+}
