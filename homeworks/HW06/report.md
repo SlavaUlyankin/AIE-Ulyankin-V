@@ -1,7 +1,7 @@
 # HW06 – Report
 
 > Файл: `homeworks/HW06/report.md`  
-> Студент: Фех Алексей Александрович
+
 
 ## 1. Dataset
 
