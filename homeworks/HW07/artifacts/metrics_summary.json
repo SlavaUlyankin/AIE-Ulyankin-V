@@ -1,59 +1,29 @@
-{
-  "dataset_1": {
-    "KMeans": {
-      "best_k": 2,
-      "metrics": {
-        "silhouette_score": 0.5216395622404242,
-        "davies_bouldin_score": 0.6853295219054459,
-        "calinski_harabasz_score": 11786.95462267153
-      }
+[
+  {
+    "dataset": 1,
+    "metrics": {
+      "silhouette": 0.5216395622404242,
+      "davies_bouldin": 0.6853295219054459,
+      "calinski_harabasz": 11786.95462267153
     },
-    "DBSCAN": {
-      "best_eps": 1.6357142857142857,
-      "min_samples": 5,
-      "metrics": {
-        "silhouette_score": 0.5216395622404242,
-        "davies_bouldin_score": 0.6853295219054459,
-        "noise_percentage": 0.0
-      }
-    }
+    "noise_frac": 0.0
   },
-  "dataset_2": {
-    "KMeans": {
-      "best_k": 2,
-      "metrics": {
-        "silhouette_score": 0.3068610017701601,
-        "davies_bouldin_score": 0.935493071248828,
-        "calinski_harabasz_score": 3573.3933329348392
-      }
+  {
+    "dataset": 2,
+    "metrics": {
+      "silhouette": 0.5812458584406734,
+      "davies_bouldin": 0.577982006980007,
+      "calinski_harabasz": 2758.1225203015906
     },
-    "AgglomerativeClustering": {
-      "best_linkage": "ward",
-      "best_k": 2,
-      "metrics": {
-        "silhouette_score": 0.2658744116185544,
-        "davies_bouldin_score": 1.0586727425666955,
-        "calinski_harabasz_score": 2929.722347992005
-      }
-    }
+    "noise_frac": 0.9185
   },
-  "dataset_3": {
-    "KMeans": {
-      "best_k": 3,
-      "metrics": {
-        "silhouette_score": 0.31554470037825183,
-        "davies_bouldin_score": 1.0787079362968925,
-        "calinski_harabasz_score": 7004.795629839117
-      }
+  {
+    "dataset": 3,
+    "metrics": {
+      "silhouette": 0.8121356112341539,
+      "davies_bouldin": 0.2449468669104906,
+      "calinski_harabasz": 3564.021041770511
     },
-    "DBSCAN": {
-      "best_eps": 0.8500000000000001,
-      "min_samples": 4,
-      "metrics": {
-        "silhouette_score": 0.3180780271476503,
-        "davies_bouldin_score": 1.520328604884599,
-        "noise_percentage": 0.1
-      }
-    }
+    "noise_frac": 0.9959333333333333
   }
-}
+]
