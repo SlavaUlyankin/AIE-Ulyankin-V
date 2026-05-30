@@ -120,7 +120,7 @@ def _preprocess_core(
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
     if fit:
         encoders["TotalCharges_median"] = df["TotalCharges"].median()
-    df["TotalCharges"].fillna(encoders["TotalCharges_median"], inplace=True)
+    df["TotalCharges"] = df["TotalCharges"].fillna(encoders["TotalCharges_median"])
 
     # ── Шаг 3: Целевая переменная ────────────────────────────────────────────
     y: Optional[pd.Series] = None

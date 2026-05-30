@@ -95,17 +95,31 @@ def verify_api_key(api_key: str = Security(API_KEY_HEADER)) -> str:
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """422 Unprocessable Entity — невалидные входные данные."""
-    errors = exc.errors()
+    """422 Unprocessable Entity — невалидные входные данные.
+
+    Pydantic v2 кладёт в exc.errors() объекты ValueError внутри поля 'ctx'.
+    json.dumps не умеет их сериализовать → явно приводим всё к строкам.
+    """
+    # Безопасная сериализация: конвертируем любые не-JSON типы в строку
+    safe_errors = []
+    for err in exc.errors():
+        safe_err = {
+            "type":  err.get("type"),
+            "loc":   [str(loc) for loc in err.get("loc", [])],
+            "msg":   err.get("msg"),
+            "input": str(err.get("input")),
+        }
+        safe_errors.append(safe_err)
+
     logger.warning(
         "Validation error on %s %s: %s",
-        request.method, request.url.path, errors
+        request.method, request.url.path, safe_errors
     )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "error": "Validation error",
-            "detail": errors,
+            "detail": safe_errors,
             "hint": "Check field names and allowed values in /docs",
         },
     )

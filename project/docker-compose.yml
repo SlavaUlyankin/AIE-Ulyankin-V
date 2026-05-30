@@ -1,0 +1,46 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.yml
+#
+# Зачем нужен Docker Compose:
+#   Одна команда `docker compose up --build` запускает сервис с правильными
+#   портами, переменными окружения и маппингом папок — без длинного docker run.
+#
+# Использование:
+#   docker compose up --build      # собрать и запустить
+#   docker compose up -d           # запустить в фоне
+#   docker compose down            # остановить и удалить контейнер
+#   docker compose logs -f         # следить за логами
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  churn-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Имя контейнера для удобства
+    container_name: churn-prediction-api
+
+    # Маппинг порта: хост:контейнер
+    ports:
+      - "8000:8000"
+
+    # Читаем переменные окружения из .env (включая API_KEY — чеклист 7)
+    env_file:
+      - .env
+
+    # Монтируем папку логов: логи пишутся на хост, не теряются при перезапуске
+    volumes:
+      - ./logs:/app/logs
+
+    # Политика перезапуска: автоматически при сбое
+    restart: unless-stopped
+
+    # Health-check: Docker сам проверяет, живой ли сервис
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
