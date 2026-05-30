@@ -1,0 +1,29 @@
+# Секреты — НИКОГДА не коммитить (пункт чеклиста 7)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Данные и артефакты (не коммитить большие файлы)
+data/raw/*.csv
+artifacts/*.pkl
+artifacts/*.joblib
+
+# Логи
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.DS_Store
